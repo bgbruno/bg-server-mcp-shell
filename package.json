@@ -1,6 +1,6 @@
 {
   "name": "bg-server-mcp-shell",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "MCP server pre shell - PTY and live streaming for long-running processes (dev servers, watch modes, docker-compose, etc.)",
   "author": "bgbruno",
@@ -34,6 +34,7 @@
   "files": [
     "bg-server-mcp-shell.js",
     "README.md",
+    "README.sk.md",
     "LICENSE"
   ],
   "dependencies": {
