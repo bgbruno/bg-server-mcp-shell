@@ -13,12 +13,135 @@ const server = new McpServer({
   version: "1.0.0"
 });
 
-// Tool: Start a long-running process in a PTY
+// Helper function to spawn PTY process
+function spawnPtyProcess({ cmd, args = [], cwd = process.cwd(), env = {}, cols = 120, rows = 30, shellOnWindows = false }) {
+  const isWin = os.platform() === "win32";
+  const exe = isWin && shellOnWindows ? "powershell.exe" : cmd;
+  const argv = isWin && shellOnWindows
+    ? ["-NoLogo", "-Command", `${cmd} ${args.join(" ")}`]
+    : args;
+
+  // COLOR env: "true" = xterm-color (with ANSI), "false" or undefined = dumb (plain text)
+  const useColor = process.env.COLOR === "true";
+  const termType = useColor ? "xterm-color" : "dumb";
+
+  // Build environment variables
+  const spawnEnv = { ...process.env, ...env };
+  if (!useColor) {
+    // Disable colors for most CLI tools
+    spawnEnv.NO_COLOR = "1";
+    spawnEnv.FORCE_COLOR = "0";
+    spawnEnv.TERM = "dumb";
+  }
+
+  const p = pty.spawn(exe, argv, {
+    name: termType,
+    cols,
+    rows,
+    cwd,
+    env: spawnEnv
+  });
+
+  return { pty: p, exe, argv };
+}
+
+// Tool: Run command and wait for completion
 server.registerTool(
-  "startProcess",
+  "startProcessAndWait",
   {
-    title: "Start Process",
-    description: "Start a long-running process in a PTY and stream output in real time.",
+    title: "Start Process And Wait",
+    description: "Run a command and wait for it to complete, returning the full output. Use for quick commands (npm --version, ls, git status). For long-running processes use startProcessBackground instead.",
+    inputSchema: {
+      cmd: z.string(),
+      args: z.array(z.string()).optional(),
+      cwd: z.string().optional(),
+      env: z.record(z.string()).optional(),
+      cols: z.number().optional(),
+      rows: z.number().optional(),
+      shellOnWindows: z.boolean().optional(),
+      timeoutMs: z.number().optional().describe("Timeout in milliseconds. Default 30000 (30s)")
+    },
+    outputSchema: {
+      ok: z.boolean(),
+      sessionId: z.string().optional(),
+      pid: z.number().optional(),
+      output: z.array(z.any()).optional(),
+      exitCode: z.number().nullable().optional(),
+      exitSignal: z.number().nullable().optional(),
+      error: z.string().optional()
+    }
+  },
+  async ({ cmd, args = [], cwd = process.cwd(), env = {}, cols = 120, rows = 30, shellOnWindows = false, timeoutMs = 30000 }) => {
+    const { pty: p, exe, argv } = spawnPtyProcess({ cmd, args, cwd, env, cols, rows, shellOnWindows });
+    
+    const sessionId = randomUUID();
+    const outputBuffer = [];
+    
+    return new Promise((resolve) => {
+      let timeoutHandle;
+      
+      const cleanup = () => {
+        if (timeoutHandle) clearTimeout(timeoutHandle);
+      };
+
+      p.onData((data) => {
+        outputBuffer.push({ type: 'stdout', data, timestamp: new Date().toISOString() });
+        console.error(`[${sessionId}] ${data}`);
+      });
+
+      p.onExit(({ exitCode, signal }) => {
+        cleanup();
+        outputBuffer.push({ 
+          type: 'exit', 
+          exitCode, 
+          signal, 
+          timestamp: new Date().toISOString() 
+        });
+        console.error(`[${sessionId}] Process exited: code=${exitCode}, signal=${signal}`);
+        
+        const output = {
+          ok: true,
+          sessionId,
+          pid: p.pid,
+          output: outputBuffer,
+          exitCode,
+          exitSignal: signal
+        };
+        
+        resolve({
+          content: [{ type: "text", text: JSON.stringify(output) }],
+          structuredContent: output
+        });
+      });
+
+      // Timeout handler
+      timeoutHandle = setTimeout(() => {
+        console.error(`[${sessionId}] Timeout after ${timeoutMs}ms, killing process`);
+        try { p.kill(); } catch {}
+        
+        const output = {
+          ok: false,
+          sessionId,
+          pid: p.pid,
+          output: outputBuffer,
+          error: `Process timeout after ${timeoutMs}ms`
+        };
+        
+        resolve({
+          content: [{ type: "text", text: JSON.stringify(output) }],
+          structuredContent: output
+        });
+      }, timeoutMs);
+    });
+  }
+);
+
+// Tool: Start background process
+server.registerTool(
+  "startProcessBackground",
+  {
+    title: "Start Background Process",
+    description: "Start a long-running process in a PTY (servers, watch modes, daemons). Returns immediately with sessionId. Use getSessionOutput to read output. For quick commands use startProcessAndWait instead.",
     inputSchema: {
       cmd: z.string(),
       args: z.array(z.string()).optional(),
@@ -36,19 +159,7 @@ server.registerTool(
     }
   },
   async ({ cmd, args = [], cwd = process.cwd(), env = {}, cols = 120, rows = 30, shellOnWindows = false }) => {
-    const isWin = os.platform() === "win32";
-    const exe = isWin && shellOnWindows ? "powershell.exe" : cmd;
-    const argv = isWin && shellOnWindows
-      ? ["-NoLogo", "-Command", `${cmd} ${args.join(" ")}`]
-      : args;
-
-    const p = pty.spawn(exe, argv, {
-      name: "xterm-color",
-      cols,
-      rows,
-      cwd,
-      env: { ...process.env, ...env }
-    });
+    const { pty: p, exe, argv } = spawnPtyProcess({ cmd, args, cwd, env, cols, rows, shellOnWindows });
 
     const sessionId = randomUUID();
     const outputBuffer = [];
