@@ -9,7 +9,7 @@ import { z } from "zod";
 const sessions = new Map();
 
 const server = new McpServer({
-  name: "mcp-shell-server",
+  name: "bg-server-mcp-shell",
   version: "1.0.0"
 });
 

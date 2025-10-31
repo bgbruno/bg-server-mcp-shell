@@ -1,4 +1,4 @@
-# MCP Shell Server (PTY / streaming)
+# MCP server pre shell
 
 MCP server na spúštanie **dlhodobo bežiacich procesov v PTY (pseudo-terminál)** s real-time streamovaním výstupu.
 
@@ -12,7 +12,7 @@ MCP server na spúštanie **dlhodobo bežiacich procesov v PTY (pseudo-terminál
 
 ## Dostupné nástroje
 
-### 1. `mcp6_startProcess`
+### 1. `startProcess`
 Spustí dlhodobo bežiaci proces v PTY terminále.
 
 **Parametre:**
@@ -39,7 +39,7 @@ Spustí dlhodobo bežiaci proces v PTY terminále.
 
 **Príklad:**
 ```javascript
-const result = await mcp6_startProcess({
+const result = await startProcess({
   cmd: "npm",
   args: ["run", "dev"],
   cwd: "/Users/bgbruno/project"
@@ -49,7 +49,7 @@ const result = await mcp6_startProcess({
 
 ---
 
-### 2. `mcp6_getSessionOutput`
+### 2. `getSessionOutput`
 Prečíta buffered výstup z bežiacej alebo ukončenej PTY session.
 
 **Parametre:**
@@ -81,13 +81,13 @@ Prečíta buffered výstup z bežiacej alebo ukončenej PTY session.
 
 **Príklad:**
 ```javascript
-const output = await mcp6_getSessionOutput({
+const output = await getSessionOutput({
   sessionId: "abc-123",
   fromIndex: 0
 });
 
 // Čítať len nové riadky (od posledného volania)
-const newOutput = await mcp6_getSessionOutput({
+const newOutput = await getSessionOutput({
   sessionId: "abc-123",
   fromIndex: output.totalLines
 });
@@ -95,7 +95,7 @@ const newOutput = await mcp6_getSessionOutput({
 
 ---
 
-### 3. `mcp6_writeInput`
+### 3. `writeInput`
 Pošle vstup do bežiacej PTY session (simuluje písanie do terminálu).
 
 **Parametre:**
@@ -116,19 +116,19 @@ Pošle vstup do bežiacej PTY session (simuluje písanie do terminálu).
 **Príklad:**
 ```javascript
 // Reštartovať Vite dev server
-await mcp6_writeInput({
+await writeInput({
   sessionId: "abc-123",
   data: "rs\n"
 });
 
 // Potvrdiť yes
-await mcp6_writeInput({
+await writeInput({
   sessionId: "abc-123",
   data: "y\n"
 });
 
 // Ukončiť proces
-await mcp6_writeInput({
+await writeInput({
   sessionId: "abc-123",
   data: "q\n"
 });
@@ -136,7 +136,7 @@ await mcp6_writeInput({
 
 ---
 
-### 4. `mcp6_stopProcess`
+### 4. `stopProcess`
 Zastaví bežiacu PTY session.
 
 **Parametre:**
@@ -156,14 +156,14 @@ Zastaví bežiacu PTY session.
 
 **Príklad:**
 ```javascript
-await mcp6_stopProcess({
+await stopProcess({
   sessionId: "abc-123"
 });
 ```
 
 ---
 
-### 5. `mcp6_listSessions`
+### 5. `listSessions`
 Vypíše všetky aktívne PTY sessions.
 
 **Parametre:**
@@ -173,13 +173,13 @@ Vypíše všetky aktívne PTY sessions.
 
 **Príklad:**
 ```javascript
-const sessions = await mcp6_listSessions();
+const sessions = await listSessions();
 // → zoznam všetkých aktívnych sessions
 ```
 
 ---
 
-### 6. `mcp6_cleanupSessions`
+### 6. `cleanupSessions`
 Odstráni ukončené (non-running) sessions z pamäte.
 
 **Parametre:**
@@ -192,10 +192,10 @@ Odstráni ukončené (non-running) sessions z pamäte.
 **Príklad:**
 ```javascript
 // Vyčistiť konkrétnu session
-await mcp6_cleanupSessions({ sessionId: "abc-123" });
+await cleanupSessions({ sessionId: "abc-123" });
 
 // Vyčistiť všetky ukončené sessions
-await mcp6_cleanupSessions({});
+await cleanupSessions({});
 ```
 
 ---
@@ -206,7 +206,7 @@ await mcp6_cleanupSessions({});
 
 ```javascript
 // 1. Spustiť proces
-const { sessionId, pid } = await mcp6_startProcess({
+const { sessionId, pid } = await startProcess({
   cmd: "npm",
   args: ["run", "dev"],
   cwd: "/project/path"
@@ -218,7 +218,7 @@ console.log(`Started process ${pid} with session ${sessionId}`);
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 // 3. Prečítať výstup
-const output = await mcp6_getSessionOutput({ 
+const output = await getSessionOutput({ 
   sessionId,
   fromIndex: 0 
 });
@@ -227,19 +227,19 @@ console.log(`Process is ${output.isRunning ? 'running' : 'stopped'}`);
 console.log('Output:', output.output.map(o => o.data).join(''));
 
 // 4. Poslať input (ak treba)
-await mcp6_writeInput({ 
+await writeInput({ 
   sessionId, 
   data: "rs\n" 
 });
 
 // 5. Prečítať nový výstup
-const newOutput = await mcp6_getSessionOutput({ 
+const newOutput = await getSessionOutput({ 
   sessionId,
   fromIndex: output.totalLines 
 });
 
 // 6. Zastaviť proces
-await mcp6_stopProcess({ sessionId });
+await stopProcess({ sessionId });
 ```
 
 ---
@@ -249,15 +249,15 @@ await mcp6_stopProcess({ sessionId });
 ```javascript
 // Spustiť 3 procesy naraz
 const sessions = {
-  frontend: await mcp6_startProcess({
+  frontend: await startProcess({
     cmd: "npm", args: ["run", "dev"],
     cwd: "/project/frontend"
   }),
-  backend: await mcp6_startProcess({
+  backend: await startProcess({
     cmd: "node", args: ["server.js"],
     cwd: "/project/backend"
   }),
-  tests: await mcp6_startProcess({
+  tests: await startProcess({
     cmd: "npm", args: ["run", "test:watch"],
     cwd: "/project/tests"
   })
@@ -265,7 +265,7 @@ const sessions = {
 
 // Kontrolovať každý proces zvlášť
 for (const [name, session] of Object.entries(sessions)) {
-  const output = await mcp6_getSessionOutput({
+  const output = await getSessionOutput({
     sessionId: session.sessionId,
     fromIndex: 0
   });
@@ -273,19 +273,19 @@ for (const [name, session] of Object.entries(sessions)) {
 }
 
 // Poslať input do konkrétneho procesu
-await mcp6_writeInput({ 
+await writeInput({ 
   sessionId: sessions.tests.sessionId,
   data: "a\n"  // run all tests
 });
 
 // Zastaviť konkrétny proces
-await mcp6_stopProcess({ 
+await stopProcess({ 
   sessionId: sessions.frontend.sessionId 
 });
 
 // Zastaviť všetky
 for (const session of Object.values(sessions)) {
-  await mcp6_stopProcess({ sessionId: session.sessionId });
+  await stopProcess({ sessionId: session.sessionId });
 }
 ```
 
@@ -321,7 +321,7 @@ for (const session of Object.values(sessions)) {
 
 ```javascript
 // Spustiť Vite
-const { sessionId } = await mcp6_startProcess({
+const { sessionId } = await startProcess({
   cmd: "npm",
   args: ["run", "dev"],
   cwd: "/project"
@@ -331,7 +331,7 @@ const { sessionId } = await mcp6_startProcess({
 await new Promise(r => setTimeout(r, 2000));
 
 // Prečítať output a hľadať error
-const output = await mcp6_getSessionOutput({ sessionId });
+const output = await getSessionOutput({ sessionId });
 const hasError = output.output.some(o => 
   o.data.includes('error') || o.data.includes('Error')
 );
@@ -345,10 +345,10 @@ if (hasError) {
 }
 
 // Reštart servera
-await mcp6_writeInput({ sessionId, data: "rs\n" });
+await writeInput({ sessionId, data: "rs\n" });
 
 // Zastaviť
-await mcp6_stopProcess({ sessionId });
+await stopProcess({ sessionId });
 ```
 
 ---
@@ -357,7 +357,7 @@ await mcp6_stopProcess({ sessionId });
 
 ```javascript
 // Spustiť docker-compose
-const { sessionId } = await mcp6_startProcess({
+const { sessionId } = await startProcess({
   cmd: "docker-compose",
   args: ["up"],
   cwd: "/project/docker"
@@ -365,7 +365,7 @@ const { sessionId } = await mcp6_startProcess({
 
 // Sledovať logy
 const checkLogs = async () => {
-  const output = await mcp6_getSessionOutput({ 
+  const output = await getSessionOutput({ 
     sessionId,
     fromIndex: 0 
   });
@@ -385,7 +385,7 @@ while (!(await checkLogs())) {
 console.log('✅ Docker Compose is ready!');
 
 // Zastaviť (Ctrl+C)
-await mcp6_writeInput({ sessionId, data: "\x03" });
+await writeInput({ sessionId, data: "\x03" });
 ```
 
 ---
@@ -397,7 +397,7 @@ await mcp6_writeInput({ sessionId, data: "\x03" });
 let lastIndex = 0;
 
 setInterval(async () => {
-  const output = await mcp6_getSessionOutput({ 
+  const output = await getSessionOutput({ 
     sessionId,
     fromIndex: lastIndex 
   });
@@ -412,13 +412,13 @@ setInterval(async () => {
 ### 2. **Graceful shutdown**
 ```javascript
 // Pokúsiť sa ukončiť "nice"
-await mcp6_writeInput({ sessionId, data: "q\n" });
+await writeInput({ sessionId, data: "q\n" });
 await new Promise(r => setTimeout(r, 1000));
 
 // Force kill ak stále beží
-const status = await mcp6_getSessionOutput({ sessionId });
+const status = await getSessionOutput({ sessionId });
 if (status.isRunning) {
-  await mcp6_stopProcess({ sessionId });
+  await stopProcess({ sessionId });
 }
 ```
 
@@ -428,7 +428,7 @@ const waitForReady = async (sessionId, timeout = 10000) => {
   const start = Date.now();
   
   while (Date.now() - start < timeout) {
-    const output = await mcp6_getSessionOutput({ sessionId });
+    const output = await getSessionOutput({ sessionId });
     const ready = output.output.some(o => o.data.includes('ready'));
     
     if (ready) return true;
@@ -440,7 +440,7 @@ const waitForReady = async (sessionId, timeout = 10000) => {
   throw new Error('Timeout waiting for ready');
 };
 
-const { sessionId } = await mcp6_startProcess({...});
+const { sessionId } = await startProcess({...});
 await waitForReady(sessionId);
 console.log('✅ Process is ready!');
 ```
@@ -451,7 +451,7 @@ console.log('✅ Process is ready!');
 
 ### Proces sa hneď ukončí
 ```javascript
-const output = await mcp6_getSessionOutput({ sessionId });
+const output = await getSessionOutput({ sessionId });
 console.log('Exit code:', output.exitCode);
 console.log('Output:', output.output.map(o => o.data).join(''));
 // → skontroluj error v výstupe
@@ -461,13 +461,13 @@ console.log('Output:', output.output.map(o => o.data).join(''));
 ```javascript
 // Počkaj chvíľu, output môže trvať
 await new Promise(r => setTimeout(r, 2000));
-const output = await mcp6_getSessionOutput({ sessionId });
+const output = await getSessionOutput({ sessionId });
 ```
 
 ### Session not found
 ```javascript
 // Session bola vyčistená - kontroluj listSessions
-const sessions = await mcp6_listSessions();
+const sessions = await listSessions();
 console.log('Active sessions:', sessions);
 ```
 

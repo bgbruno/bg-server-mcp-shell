@@ -1,15 +1,41 @@
 {
-  "name": "bg--mcp-shell-server",
+  "name": "bg-server-mcp-shell",
   "version": "1.0.0",
   "type": "module",
-  "private": true,
-  "description": "MCP shell server with PTY and live streaming (npm run dev, etc.)",
+  "description": "MCP server pre shell - PTY and live streaming for long-running processes (dev servers, watch modes, docker-compose, etc.)",
+  "author": "bgbruno",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "shell",
+    "pty",
+    "terminal",
+    "streaming",
+    "dev-server",
+    "watch-mode",
+    "long-running",
+    "background-process",
+    "model-context-protocol"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bgbruno/bg-server-mcp-shell.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bgbruno/bg-server-mcp-shell/issues"
+  },
+  "homepage": "https://github.com/bgbruno/bg-server-mcp-shell#readme",
   "bin": {
-    "mcp-shell-server": "./mcp-shell-server.js"
+    "bg-server-mcp-shell": "./mcp-shell-server.js"
   },
   "scripts": {
     "start": "node ./mcp-shell-server.js"
   },
+  "files": [
+    "mcp-shell-server.js",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",
     "node-pty": "^1.0.0"
