@@ -10,7 +10,7 @@ const sessions = new Map();
 
 const server = new McpServer({
   name: "bg-server-mcp-shell",
-  version: "1.0.0"
+  version: "1.0.2"
 });
 
 // Helper function to spawn PTY process
