@@ -10,7 +10,15 @@ const sessions = new Map();
 
 const server = new McpServer({
   name: "bg-server-mcp-shell",
-  version: "1.0.2"
+  version: "1.0.4",
+  icons: [
+    {
+      kind: "url",
+      src: "https://raw.githubusercontent.com/bgbruno/bg-server-mcp-shell/main/cover-square.jpg",
+      mimeType: "image/jpeg",
+      sizes: ["256x256"]
+    }
+  ]
 });
 
 // Helper function to spawn PTY process

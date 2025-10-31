@@ -239,6 +239,24 @@ npm publish
 - **PTY:** node-pty for terminal emulation
 - **Node:** 18+ required
 - **Platform:** macOS, Linux, Windows
+- **Icon:** Server includes icon for MCP market/UI display
+
+### Icon Configuration
+
+The server includes an icon that displays in MCP clients (Claude Desktop, Cline, etc.) and MCP marketplaces. The icon is configured in the server implementation:
+
+```javascript
+const server = new McpServer({
+  name: "bg-server-mcp-shell",
+  version: "1.0.4",
+  icons: [{
+    kind: "url",
+    src: "https://raw.githubusercontent.com/.../cover-wide.jpg",
+    mimeType: "image/jpeg",
+    sizes: ["256x256"]
+  }]
+});
+```
 
 ---
 
@@ -251,6 +269,12 @@ Contributions welcome! Please:
 3. Add tests for new features
 4. Ensure all tests pass: `npm test`
 5. Submit a pull request
+
+### 🐛 Issues & Bug Reports
+
+Found a bug or have a feature request? Please report it on GitHub:
+
+**[Report an Issue](https://github.com/bgbruno/bg-server-mcp-shell/issues)**
 
 ---
 
