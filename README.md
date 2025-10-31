@@ -115,18 +115,7 @@ Add to your MCP client config (e.g., Claude Desktop, Cline):
 
 ---
 
-## 🛠️ Available Tools
-
-### CLI Usage (Advanced)
-
-For testing or scripting, call tools directly via command line.
-
-**Start the server:**
-```bash
-npx bg-server-mcp-shell
-```
-
-**Then in another terminal, send MCP requests:**
+## 🛠️ Functions
 
 **Quick command (wait for completion):**
 `startProcessAndWait` Run command and wait for completion
@@ -176,89 +165,18 @@ echo '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"cleanupSes
 
 ---
 
-## 🧪 Development & Testing
+## 🧪 Development
 
-For developers contributing to this project:
-
-```bash
-# All tests
-npm test
-
-# Unit tests only (fast)
-npm run test:unit
-
-# Integration tests
-npm run test:integration
-
-# Watch mode
-npm run test:watch
-
-# Verbose output
-npm run test:verbose
-```
 
 **Full documentation:** See [Tests Documentation](tests/README.md) for complete testing guide, coverage, and API reference.
 
----
-
-## 🚀 Publishing to npm
-
-Automated publishing workflow with version management:
-
-```bash
-# Patch release (1.0.3 → 1.0.4) - bug fixes
-npm run publish:patch
-
-# Minor release (1.0.3 → 1.1.0) - new features
-npm run publish:minor
-
-# Major release (1.0.3 → 2.0.0) - breaking changes
-npm run publish:major
-```
-
-**What happens automatically:**
-1. ✅ Runs all tests (`prepublishOnly`)
-2. 📝 Updates version in package.json
-3. 🏷️ Creates git commit and tag
-4. 📦 Publishes to npm
-5. ⬆️ Pushes commits and tags to GitHub
-
-**Manual process (if needed):**
-```bash
-npm login
-npm version patch|minor|major
-npm publish
-```
-
----
-
 ## 📦 Technical Details
 
-- **Framework:** MCP (Model Context Protocol)
+- **Framework:** MCP (Model Context Protocol) [MCP Protocol Spec](https://modelcontextprotocol.io)
 - **Test Runner:** Node.js native test runner (node:test)
-- **PTY:** node-pty for terminal emulation
-- **Node:** 18+ required
+- **PTY:** node-pty for terminal emulation [node-pty Documentation](https://github.com/microsoft/node-pty)
+- **Node:** 18+ required [Node.js Test Runner](https://nodejs.org/api/test.html)
 - **Platform:** macOS, Linux, Windows
-- **Icon:** Server includes icon for MCP market/UI display
-
-### Icon Configuration
-
-The server includes an icon that displays in MCP clients (Claude Desktop, Cline, etc.) and MCP marketplaces. The icon is configured in the server implementation:
-
-```javascript
-const server = new McpServer({
-  name: "bg-server-mcp-shell",
-  version: "1.0.4",
-  icons: [{
-    kind: "url",
-    src: "https://raw.githubusercontent.com/.../cover-wide.jpg",
-    mimeType: "image/jpeg",
-    sizes: ["256x256"]
-  }]
-});
-```
-
----
 
 ## 🤝 Contributing
 
@@ -281,11 +199,3 @@ Found a bug or have a feature request? Please report it on GitHub:
 ## 📄 License
 
 MIT © [Bruno Garret](https://bgbruno.com)
-
----
-
-## 🔗 Links
-
-- [MCP Protocol Spec](https://modelcontextprotocol.io)
-- [node-pty Documentation](https://github.com/microsoft/node-pty)
-- [Node.js Test Runner](https://nodejs.org/api/test.html)

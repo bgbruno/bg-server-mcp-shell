@@ -1,6 +1,6 @@
 {
   "name": "bg-server-mcp-shell",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "MCP server for shell - PTY with live streaming for long-running processes (dev servers, watch modes, docker-compose, etc.)",
   "author": "bgbruno",
