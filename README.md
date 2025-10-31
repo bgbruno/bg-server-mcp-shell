@@ -1,5 +1,7 @@
 # 🐚 bg-mcp-shell-server
 
+![Cover Image](cover-wide.jpg)
+
 > MCP server for running long-running processes in PTY with real-time output streaming
 
 ---
