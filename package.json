@@ -35,12 +35,19 @@
     "test:integration": "node --test tests/integration/**/*.test.js",
     "test:watch": "node --test --watch tests/**/*.test.js",
     "test:verbose": "node --test --test-reporter=spec tests/**/*.test.js",
-    "test:run": "bash tests/tests-run.sh"
+    "test:run": "bash tests/tests-run.sh",
+    "prepublishOnly": "npm test",
+    "version": "git add -A",
+    "postversion": "git push && git push --tags",
+    "publish:patch": "npm version patch && npm publish",
+    "publish:minor": "npm version minor && npm publish",
+    "publish:major": "npm version major && npm publish"
   },
   "files": [
     "bg-server-mcp-shell.js",
     "README.md",
     "LICENSE",
+    "cover-wide.jpg",
     "tests/README.md"
   ],
   "dependencies": {

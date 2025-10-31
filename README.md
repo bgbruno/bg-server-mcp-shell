@@ -201,6 +201,37 @@ npm run test:verbose
 
 ---
 
+## 🚀 Publishing to npm
+
+Automated publishing workflow with version management:
+
+```bash
+# Patch release (1.0.3 → 1.0.4) - bug fixes
+npm run publish:patch
+
+# Minor release (1.0.3 → 1.1.0) - new features
+npm run publish:minor
+
+# Major release (1.0.3 → 2.0.0) - breaking changes
+npm run publish:major
+```
+
+**What happens automatically:**
+1. ✅ Runs all tests (`prepublishOnly`)
+2. 📝 Updates version in package.json
+3. 🏷️ Creates git commit and tag
+4. 📦 Publishes to npm
+5. ⬆️ Pushes commits and tags to GitHub
+
+**Manual process (if needed):**
+```bash
+npm login
+npm version patch|minor|major
+npm publish
+```
+
+---
+
 ## 📦 Technical Details
 
 - **Framework:** MCP (Model Context Protocol)
