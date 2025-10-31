@@ -2,7 +2,7 @@
 import { spawn } from 'child_process';
 
 // Spawn the MCP server
-const server = spawn('node', ['mcp-shell-server.js'], {
+const server = spawn('node', ['bg-server-mcp-shell.js'], {
   cwd: process.cwd(),
   stdio: ['pipe', 'pipe', 'inherit']
 });

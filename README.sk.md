@@ -1,47 +1,47 @@
-# MCP Shell Server
+# MCP server pre shell
 
-🌍 **Languages:** [English](README.md) | [Slovenčina](README.sk.md)
+🌍 **Jazyky:** [English](README.md) | [Slovenčina](README.sk.md)
 
 ---
 
-MCP server for running **long-running processes in PTY (pseudo-terminal)** with real-time output streaming.
+MCP server na spúštanie **dlhodobo bežiacich procesov v PTY (pseudo-terminál)** s real-time streamovaním výstupu.
 
-## Key Features
+## Kľúčové vlastnosti
 
-- ✅ **Real-time output streaming** - output streams live to the terminal
-- ✅ **Interactive processes** - ability to send input to running processes
-- ✅ **Multiple sessions** - start and control multiple processes simultaneously
-- ✅ **Buffered output** - entire output is preserved and can be read repeatedly
-- ✅ **PTY emulation** - process runs as in a real terminal
+- ✅ **Real-time output streaming** - výstup sa streamuje live do terminálu
+- ✅ **Interaktívne procesy** - možnosť posielať vstup do bežiaceho procesu
+- ✅ **Multiple sessions** - spustiť a kontrolovať viaceré procesy súčasne
+- ✅ **Buffered output** - celý výstup sa uchováva a môžeš ho čítať opakovane
+- ✅ **PTY emulation** - proces beží ako v skutočnom termináli
 
-## Available Tools
+## Dostupné nástroje
 
 ### 1. `startProcess`
-Starts a long-running process in a PTY terminal.
+Spustí dlhodobo bežiaci proces v PTY terminále.
 
-**Parameters:**
+**Parametre:**
 ```javascript
 {
-  cmd: string,              // command to execute
-  args: string[],           // array of arguments
-  cwd: string,              // working directory
-  env?: object,             // environment variables (optional)
-  rows?: number,            // terminal window height (optional)
-  cols?: number,            // terminal window width (optional)
-  shellOnWindows?: boolean  // use shell on Windows (optional)
+  cmd: string,              // príkaz na spustenie
+  args: string[],           // pole argumentov
+  cwd: string,              // pracovný adresár
+  env?: object,             // environment premenné (optional)
+  rows?: number,            // výška terminálového okna (optional)
+  cols?: number,            // šírka terminálového okna (optional)
+  shellOnWindows?: boolean  // použiť shell na Windows (optional)
 }
 ```
 
-**Output:**
+**Výstup:**
 ```javascript
 {
   ok: boolean,
-  sessionId: string,  // unique ID for this session
-  pid: number         // process ID in the system
+  sessionId: string,  // unique ID pre túto session
+  pid: number         // process ID v systéme
 }
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
 const result = await startProcess({
   cmd: "npm",
@@ -54,43 +54,43 @@ const result = await startProcess({
 ---
 
 ### 2. `getSessionOutput`
-Reads buffered output from a running or finished PTY session.
+Prečíta buffered výstup z bežiacej alebo ukončenej PTY session.
 
-**Parameters:**
+**Parametre:**
 ```javascript
 {
-  sessionId: string,  // session ID from startProcess
-  fromIndex?: number  // from which line to read (default: 0)
+  sessionId: string,  // ID session z startProcess
+  fromIndex?: number  // od ktorého riadku čítať (default: 0)
 }
 ```
 
-**Output:**
+**Výstup:**
 ```javascript
 {
   ok: boolean,
   sessionId: string,
-  isRunning: boolean,      // whether the process is still running
-  exitCode: number | null, // exit code (if finished)
+  isRunning: boolean,      // či proces stále beží
+  exitCode: number | null, // exit kód (ak skončil)
   exitSignal: number | null,
-  output: [                // array of outputs
+  output: [                // pole výstupov
     {
       type: "stdout" | "stderr",
-      data: string,        // output text
+      data: string,        // text výstupu
       timestamp: string    // ISO timestamp
     }
   ],
-  totalLines: number       // total number of lines
+  totalLines: number       // celkový počet riadkov
 }
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
 const output = await getSessionOutput({
   sessionId: "abc-123",
   fromIndex: 0
 });
 
-// Read only new lines (from last call)
+// Čítať len nové riadky (od posledného volania)
 const newOutput = await getSessionOutput({
   sessionId: "abc-123",
   fromIndex: output.totalLines
@@ -100,38 +100,38 @@ const newOutput = await getSessionOutput({
 ---
 
 ### 3. `writeInput`
-Sends input to a running PTY session (simulates typing in terminal).
+Pošle vstup do bežiacej PTY session (simuluje písanie do terminálu).
 
-**Parameters:**
+**Parametre:**
 ```javascript
 {
-  sessionId: string,  // session ID
-  data: string        // text to send (e.g., "rs\n")
+  sessionId: string,  // ID session
+  data: string        // text na odoslanie (napr. "rs\n")
 }
 ```
 
-**Output:**
+**Výstup:**
 ```javascript
 {
   ok: boolean
 }
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
-// Restart Vite dev server
+// Reštartovať Vite dev server
 await writeInput({
   sessionId: "abc-123",
   data: "rs\n"
 });
 
-// Confirm yes
+// Potvrdiť yes
 await writeInput({
   sessionId: "abc-123",
   data: "y\n"
 });
 
-// Exit process
+// Ukončiť proces
 await writeInput({
   sessionId: "abc-123",
   data: "q\n"
@@ -141,24 +141,24 @@ await writeInput({
 ---
 
 ### 4. `stopProcess`
-Stops a running PTY session.
+Zastaví bežiacu PTY session.
 
-**Parameters:**
+**Parametre:**
 ```javascript
 {
-  sessionId: string  // session ID to stop
+  sessionId: string  // ID session na zastavenie
 }
 ```
 
-**Output:**
+**Výstup:**
 ```javascript
 {
   ok: boolean,
-  killed: boolean  // whether the process was killed
+  killed: boolean  // či bol proces zabitý
 }
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
 await stopProcess({
   sessionId: "abc-123"
@@ -168,48 +168,48 @@ await stopProcess({
 ---
 
 ### 5. `listSessions`
-Lists all active PTY sessions.
+Vypíše všetky aktívne PTY sessions.
 
-**Parameters:**
+**Parametre:**
 ```javascript
-{}  // no parameters
+{}  // žiadne parametre
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
 const sessions = await listSessions();
-// → list of all active sessions
+// → zoznam všetkých aktívnych sessions
 ```
 
 ---
 
 ### 6. `cleanupSessions`
-Removes finished (non-running) sessions from memory.
+Odstráni ukončené (non-running) sessions z pamäte.
 
-**Parameters:**
+**Parametre:**
 ```javascript
 {
-  sessionId?: string  // optional - cleanup specific session
+  sessionId?: string  // optional - vyčistiť konkrétnu session
 }
 ```
 
-**Example:**
+**Príklad:**
 ```javascript
-// Cleanup specific session
+// Vyčistiť konkrétnu session
 await cleanupSessions({ sessionId: "abc-123" });
 
-// Cleanup all finished sessions
+// Vyčistiť všetky ukončené sessions
 await cleanupSessions({});
 ```
 
 ---
 
-## Typical Workflow
+## Typický workflow
 
-### Basic Usage
+### Základné použitie
 
 ```javascript
-// 1. Start process
+// 1. Spustiť proces
 const { sessionId, pid } = await startProcess({
   cmd: "npm",
   args: ["run", "dev"],
@@ -218,10 +218,10 @@ const { sessionId, pid } = await startProcess({
 
 console.log(`Started process ${pid} with session ${sessionId}`);
 
-// 2. Wait for initialization
+// 2. Počkať na inicializáciu
 await new Promise(resolve => setTimeout(resolve, 2000));
 
-// 3. Read output
+// 3. Prečítať výstup
 const output = await getSessionOutput({ 
   sessionId,
   fromIndex: 0 
@@ -230,28 +230,28 @@ const output = await getSessionOutput({
 console.log(`Process is ${output.isRunning ? 'running' : 'stopped'}`);
 console.log('Output:', output.output.map(o => o.data).join(''));
 
-// 4. Send input (if needed)
+// 4. Poslať input (ak treba)
 await writeInput({ 
   sessionId, 
   data: "rs\n" 
 });
 
-// 5. Read new output
+// 5. Prečítať nový výstup
 const newOutput = await getSessionOutput({ 
   sessionId,
   fromIndex: output.totalLines 
 });
 
-// 6. Stop process
+// 6. Zastaviť proces
 await stopProcess({ sessionId });
 ```
 
 ---
 
-### Multiple Parallel Processes
+### Multiple paralelné procesy
 
 ```javascript
-// Start 3 processes at once
+// Spustiť 3 procesy naraz
 const sessions = {
   frontend: await startProcess({
     cmd: "npm", args: ["run", "dev"],
@@ -267,7 +267,7 @@ const sessions = {
   })
 };
 
-// Monitor each process separately
+// Kontrolovať každý proces zvlášť
 for (const [name, session] of Object.entries(sessions)) {
   const output = await getSessionOutput({
     sessionId: session.sessionId,
@@ -276,18 +276,18 @@ for (const [name, session] of Object.entries(sessions)) {
   console.log(`${name}: ${output.isRunning ? 'running ✅' : 'stopped ❌'}`);
 }
 
-// Send input to specific process
+// Poslať input do konkrétneho procesu
 await writeInput({ 
   sessionId: sessions.tests.sessionId,
   data: "a\n"  // run all tests
 });
 
-// Stop specific process
+// Zastaviť konkrétny proces
 await stopProcess({ 
   sessionId: sessions.frontend.sessionId 
 });
 
-// Stop all
+// Zastaviť všetky
 for (const session of Object.values(sessions)) {
   await stopProcess({ sessionId: session.sessionId });
 }
@@ -295,79 +295,79 @@ for (const session of Object.values(sessions)) {
 
 ---
 
-## When to Use shell-bg?
+## Kedy použiť shell-bg?
 
-| Situation | Use shell-bg? |
-|-----------|--------------|
-| Dev server (npm run dev, vite, webpack) | ✅ Yes |
-| Watch modes (nodemon, jest --watch) | ✅ Yes |
-| Long-running processes (docker-compose up) | ✅ Yes |
-| Interactive CLI (npm init, git commit) | ✅ Yes |
-| Short commands (ls, cat, grep) | ❌ No (use mcp8_shell_execute) |
-| One-off commands with quick output | ❌ No (use mcp8_shell_execute) |
-
----
-
-## Comparison with Other Shell Tools
-
-| Tool | Long-running processes | Output in response | Interaction | Usage |
-|------|----------------------|-------------------|------------|-------|
-| **mcp6 (shell-bg)** | ✅ Yes | ✅ Buffer + terminal | ✅ writeInput | Dev servers, watch modes |
-| **mcp8 (shell-tumf)** | ❌ Hangs | ✅ Yes | ❌ No | ls, cat, grep, git status |
-| **mcp7 (shell-hdresearch)** | ❌ Hangs | ✅ Yes | ❌ No | Basic commands |
-| **run_command** | ⚠️ Blocking/Async | ⚠️ Partial | ❌ No | Standard commands with user approval |
+| Situácia | Použiť shell-bg? |
+|----------|------------------|
+| Dev server (npm run dev, vite, webpack) | ✅ Áno |
+| Watch módy (nodemon, jest --watch) | ✅ Áno |
+| Long-running procesy (docker-compose up) | ✅ Áno |
+| Interaktívne CLI (npm init, git commit) | ✅ Áno |
+| Krátke príkazy (ls, cat, grep) | ❌ Nie (použiť mcp8_shell_execute) |
+| Jednorázové príkazy s rýchlym výstupom | ❌ Nie (použiť mcp8_shell_execute) |
 
 ---
 
-## Usage Examples
+## Porovnanie s inými shell nástrojmi
 
-### Dev Server Debugging
+| Nástroj | Dlhodobé procesy | Výstup v response | Interakcia | Použitie |
+|---------|------------------|-------------------|------------|----------|
+| **mcp6 (shell-bg)** | ✅ Áno | ✅ Buffer + terminal | ✅ writeInput | Dev servery, watch módy |
+| **mcp8 (shell-tumf)** | ❌ Zasekne sa | ✅ Áno | ❌ Nie | ls, cat, grep, git status |
+| **mcp7 (shell-hdresearch)** | ❌ Zasekne sa | ✅ Áno | ❌ Nie | Základné príkazy |
+| **run_command** | ⚠️ Blocking/Async | ⚠️ Čiastočne | ❌ Nie | Štandardné príkazy s user schválením |
+
+---
+
+## Príklady použitia
+
+### Dev server debugging
 
 ```javascript
-// Start Vite
+// Spustiť Vite
 const { sessionId } = await startProcess({
   cmd: "npm",
   args: ["run", "dev"],
   cwd: "/project"
 });
 
-// Wait 2s
+// Počkať 2s
 await new Promise(r => setTimeout(r, 2000));
 
-// Read output and look for errors
+// Prečítať output a hľadať error
 const output = await getSessionOutput({ sessionId });
 const hasError = output.output.some(o => 
   o.data.includes('error') || o.data.includes('Error')
 );
 
 if (hasError) {
-  console.log('❌ Dev server has error!');
-  // Print error log
+  console.log('❌ Dev server má chybu!');
+  // Výpis error logu
   output.output
     .filter(o => o.type === 'stderr')
     .forEach(o => console.error(o.data));
 }
 
-// Restart server
+// Reštart servera
 await writeInput({ sessionId, data: "rs\n" });
 
-// Stop
+// Zastaviť
 await stopProcess({ sessionId });
 ```
 
 ---
 
-### Docker Compose Management
+### Docker Compose management
 
 ```javascript
-// Start docker-compose
+// Spustiť docker-compose
 const { sessionId } = await startProcess({
   cmd: "docker-compose",
   args: ["up"],
   cwd: "/project/docker"
 });
 
-// Monitor logs
+// Sledovať logy
 const checkLogs = async () => {
   const output = await getSessionOutput({ 
     sessionId,
@@ -381,22 +381,22 @@ const checkLogs = async () => {
   return isReady;
 };
 
-// Wait until DB is ready
+// Počkať kým DB nie je ready
 while (!(await checkLogs())) {
   await new Promise(r => setTimeout(r, 1000));
 }
 
 console.log('✅ Docker Compose is ready!');
 
-// Stop (Ctrl+C)
+// Zastaviť (Ctrl+C)
 await writeInput({ sessionId, data: "\x03" });
 ```
 
 ---
 
-## Tips & Tricks
+## Tipy & Triky
 
-### 1. **Incremental Output Reading**
+### 1. **Inkrementálne čítanie výstupu**
 ```javascript
 let lastIndex = 0;
 
@@ -406,27 +406,27 @@ setInterval(async () => {
     fromIndex: lastIndex 
   });
   
-  // Only new lines
+  // Len nové riadky
   output.output.forEach(o => console.log(o.data));
   
   lastIndex = output.totalLines;
 }, 1000);
 ```
 
-### 2. **Graceful Shutdown**
+### 2. **Graceful shutdown**
 ```javascript
-// Try to exit "nicely"
+// Pokúsiť sa ukončiť "nice"
 await writeInput({ sessionId, data: "q\n" });
 await new Promise(r => setTimeout(r, 1000));
 
-// Force kill if still running
+// Force kill ak stále beží
 const status = await getSessionOutput({ sessionId });
 if (status.isRunning) {
   await stopProcess({ sessionId });
 }
 ```
 
-### 3. **Startup Timeout**
+### 3. **Timeout pre startup**
 ```javascript
 const waitForReady = async (sessionId, timeout = 10000) => {
   const start = Date.now();
@@ -453,24 +453,24 @@ console.log('✅ Process is ready!');
 
 ## Troubleshooting
 
-### Process exits immediately
+### Proces sa hneď ukončí
 ```javascript
 const output = await getSessionOutput({ sessionId });
 console.log('Exit code:', output.exitCode);
 console.log('Output:', output.output.map(o => o.data).join(''));
-// → check error in output
+// → skontroluj error v výstupe
 ```
 
-### Output is empty
+### Výstup je prázdny
 ```javascript
-// Wait a bit, output may take time
+// Počkaj chvíľu, output môže trvať
 await new Promise(r => setTimeout(r, 2000));
 const output = await getSessionOutput({ sessionId });
 ```
 
 ### Session not found
 ```javascript
-// Session was cleaned up - check listSessions
+// Session bola vyčistená - kontroluj listSessions
 const sessions = await listSessions();
 console.log('Active sessions:', sessions);
 ```
@@ -479,22 +479,22 @@ console.log('Active sessions:', sessions);
 
 ## Best Practices
 
-1. ✅ **Always save sessionId** - you need it for all operations
-2. ✅ **Check isRunning** - verify process is running before writeInput
-3. ✅ **Use fromIndex** - more efficient reading of only new lines
-4. ✅ **Cleanup sessions** - call stopProcess when you no longer need the process
-5. ✅ **Timeout protection** - don't wait indefinitely for output
-6. ✅ **Error handling** - check exitCode and stderr output
+1. ✅ **Vždy ukladaj sessionId** - potrebuješ ho pre všetky operácie
+2. ✅ **Kontroluj isRunning** - pred writeInput skontroluj či proces beží
+3. ✅ **Používaj fromIndex** - efektívnejšie čítanie len nových riadkov
+4. ✅ **Cleanup sessions** - zavolaj stopProcess keď už nepotrebuješ proces
+5. ✅ **Timeout ochrana** - nečakaj donekonečna na output
+6. ✅ **Error handling** - kontroluj exitCode a stderr output
 
 ---
 
-## Conclusion
+## Záver
 
-**shell-bg is ideal for:**
-- 🚀 Dev servers (Vite, webpack, Next.js)
-- 🔄 Watch modes (nodemon, jest --watch)
+**shell-bg je ideálny pre:**
+- 🚀 Dev servery (Vite, webpack, Next.js)
+- 🔄 Watch módy (nodemon, jest --watch)
 - 🐳 Docker / Docker Compose
 - 🧪 Long-running tests
-- 💬 Interactive CLI tools
+- 💬 Interaktívne CLI nástroje
 
-**Main advantage:** Real-time stream + interaction + multiple sessions = full control! 💪
+**Hlavná výhoda:** Real-time stream + interakcia + multiple sessions = plná kontrola! 💪

@@ -9,7 +9,7 @@ FIFO=$(mktemp -u)
 mkfifo "$FIFO"
 
 # Start server with output to file
-node mcp-shell-server.js < "$FIFO" > /tmp/mcp-output.txt 2>&1 &
+node bg-server-mcp-shell.js < "$FIFO" > /tmp/mcp-output.txt 2>&1 &
 SERVER_PID=$!
 
 # Open FIFO for writing
@@ -76,9 +76,10 @@ sleep 0.3
 grep '"id":9' /tmp/mcp-output.txt | tail -1 | jq '.result.structuredContent'
 echo ""
 
-echo "🔟 Real project test: npm run kill+dev"
-PROJECT_PATH="/Users/bgbruno/Development/bgu/xrec --- data host private/xrec---xrec-app---fe---js---2020-12-20--su--18-51---prod/xrec---xrec-app---fe---js---2020-12-20--su--18-51---prod--pure+vite"
-echo "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"tools/call\",\"params\":{\"name\":\"startProcess\",\"arguments\":{\"cmd\":\"npm\",\"args\":[\"run\",\"kill+dev\"],\"cwd\":\"$PROJECT_PATH\"}}}" >&3
+echo "🔟 Real project test: npm run dev"
+# Replace with your own project path for local testing
+PROJECT_PATH="/path/to/your/project"
+echo "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"tools/call\",\"params\":{\"name\":\"startProcess\",\"arguments\":{\"cmd\":\"npm\",\"args\":[\"run\",\"dev\"],\"cwd\":\"$PROJECT_PATH\"}}}" >&3
 sleep 0.5
 SESSION_ID3=$(grep '"id":10' /tmp/mcp-output.txt | tail -1 | jq -r '.result.structuredContent.sessionId')
 echo "   SessionId: $SESSION_ID3"

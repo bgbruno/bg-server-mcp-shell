@@ -26,13 +26,13 @@
   },
   "homepage": "https://github.com/bgbruno/bg-server-mcp-shell#readme",
   "bin": {
-    "bg-server-mcp-shell": "./mcp-shell-server.js"
+    "bg-server-mcp-shell": "./bg-server-mcp-shell.js"
   },
   "scripts": {
-    "start": "node ./mcp-shell-server.js"
+    "start": "node ./bg-server-mcp-shell.js"
   },
   "files": [
-    "mcp-shell-server.js",
+    "bg-server-mcp-shell.js",
     "README.md",
     "LICENSE"
   ],
