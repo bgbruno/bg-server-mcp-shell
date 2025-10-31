@@ -1,500 +1,234 @@
-# MCP Shell Server
+# 🐚 bg-mcp-shell-server
 
-🌍 **Languages:** [English](README.md) | [Slovenčina](README.sk.md)
-
----
-
-MCP server for running **long-running processes in PTY (pseudo-terminal)** with real-time output streaming.
-
-## Key Features
-
-- ✅ **Real-time output streaming** - output streams live to the terminal
-- ✅ **Interactive processes** - ability to send input to running processes
-- ✅ **Multiple sessions** - start and control multiple processes simultaneously
-- ✅ **Buffered output** - entire output is preserved and can be read repeatedly
-- ✅ **PTY emulation** - process runs as in a real terminal
-
-## Available Tools
-
-### 1. `startProcess`
-Starts a long-running process in a PTY terminal.
-
-**Parameters:**
-```javascript
-{
-  cmd: string,              // command to execute
-  args: string[],           // array of arguments
-  cwd: string,              // working directory
-  env?: object,             // environment variables (optional)
-  rows?: number,            // terminal window height (optional)
-  cols?: number,            // terminal window width (optional)
-  shellOnWindows?: boolean  // use shell on Windows (optional)
-}
-```
-
-**Output:**
-```javascript
-{
-  ok: boolean,
-  sessionId: string,  // unique ID for this session
-  pid: number         // process ID in the system
-}
-```
-
-**Example:**
-```javascript
-const result = await startProcess({
-  cmd: "npm",
-  args: ["run", "dev"],
-  cwd: "/Users/bgbruno/project"
-});
-// → { ok: true, sessionId: "abc-123", pid: 12345 }
-```
+> MCP server for running long-running processes in PTY with real-time output streaming
 
 ---
 
-### 2. `getSessionOutput`
-Reads buffered output from a running or finished PTY session.
+## 💡 Use cases
 
-**Parameters:**
-```javascript
-{
-  sessionId: string,  // session ID from startProcess
-  fromIndex?: number  // from which line to read (default: 0)
-}
+**You:** "Run playwright tests and monitor for errors"
+
+**AI:**
+```
+Running tests...
+
+[chromium] › login.spec.ts:12:5 › user login
+  ✓ should show login form (543ms)
+  ✓ should validate email (234ms)
+  
+[chromium] › checkout.spec.ts:25:3 › payment flow
+  ✗ should process payment (1823ms)
+    Error: Timeout waiting for selector "button[data-testid=pay]"
+
+❌ Found error in tests! 1 test failed.
 ```
 
-**Output:**
-```javascript
-{
-  ok: boolean,
-  sessionId: string,
-  isRunning: boolean,      // whether the process is still running
-  exitCode: number | null, // exit code (if finished)
-  exitSignal: number | null,
-  output: [                // array of outputs
-    {
-      type: "stdout" | "stderr",
-      data: string,        // output text
-      timestamp: string    // ISO timestamp
-    }
-  ],
-  totalLines: number       // total number of lines
-}
+**You:** "Build and deploy to Cloudflare"
+
+**AI:**
+```
+Building project...
+✓ 1245 modules transformed.
+✓ built in 2.34s
+
+Deploying to Cloudflare Pages...
+✓ Uploading 143 files
+✓ Deployment complete!
+
+🚀 https://my-app-a1b2c3.pages.dev
+✅ Successfully deployed to production
 ```
 
-**Example:**
-```javascript
-const output = await getSessionOutput({
-  sessionId: "abc-123",
-  fromIndex: 0
-});
+**You:** "Start docker-compose and tell me when postgres is ready"
 
-// Read only new lines (from last call)
-const newOutput = await getSessionOutput({
-  sessionId: "abc-123",
-  fromIndex: output.totalLines
-});
+**AI:**
+```
+Starting docker-compose...
+
+postgres_1  | database system is ready to accept connections
+redis_1     | Ready to accept connections  
+web_1       | Server listening on port 3000
+
+✅ Postgres is ready! All containers running.
 ```
 
 ---
 
-### 3. `writeInput`
-Sends input to a running PTY session (simulates typing in terminal).
+## ✨ Features
 
-**Parameters:**
-```javascript
-{
-  sessionId: string,  // session ID
-  data: string        // text to send (e.g., "rs\n")
-}
-```
-
-**Output:**
-```javascript
-{
-  ok: boolean
-}
-```
-
-**Example:**
-```javascript
-// Restart Vite dev server
-await writeInput({
-  sessionId: "abc-123",
-  data: "rs\n"
-});
-
-// Confirm yes
-await writeInput({
-  sessionId: "abc-123",
-  data: "y\n"
-});
-
-// Exit process
-await writeInput({
-  sessionId: "abc-123",
-  data: "q\n"
-});
-```
+- ✅ **Real-time output streaming** - Live terminal output
+- ✅ **Interactive processes** - Send input to running processes
+- ✅ **Multiple sessions** - Control multiple processes simultaneously
+- ✅ **Buffered output** - Full output history preserved
+- ✅ **PTY emulation** - True terminal experience
 
 ---
 
-### 4. `stopProcess`
-Stops a running PTY session.
+## 💡 Perfect For
 
-**Parameters:**
-```javascript
-{
-  sessionId: string  // session ID to stop
-}
-```
-
-**Output:**
-```javascript
-{
-  ok: boolean,
-  killed: boolean  // whether the process was killed
-}
-```
-
-**Example:**
-```javascript
-await stopProcess({
-  sessionId: "abc-123"
-});
-```
+- 🚀 **Dev servers** (Vite, webpack, Next.js)
+- 🔄 **Watch modes** (nodemon, jest --watch)
+- 🐳 **Docker/Docker Compose**
+- 🧪 **Long-running tests**
+- 💬 **Interactive CLI tools**
 
 ---
 
-### 5. `listSessions`
-Lists all active PTY sessions.
+## 📊 Comparison
 
-**Parameters:**
-```javascript
-{}  // no parameters
-```
-
-**Example:**
-```javascript
-const sessions = await listSessions();
-// → list of all active sessions
-```
-
----
-
-### 6. `cleanupSessions`
-Removes finished (non-running) sessions from memory.
-
-**Parameters:**
-```javascript
-{
-  sessionId?: string  // optional - cleanup specific session
-}
-```
-
-**Example:**
-```javascript
-// Cleanup specific session
-await cleanupSessions({ sessionId: "abc-123" });
-
-// Cleanup all finished sessions
-await cleanupSessions({});
-```
-
----
-
-## Typical Workflow
-
-### Basic Usage
-
-```javascript
-// 1. Start process
-const { sessionId, pid } = await startProcess({
-  cmd: "npm",
-  args: ["run", "dev"],
-  cwd: "/project/path"
-});
-
-console.log(`Started process ${pid} with session ${sessionId}`);
-
-// 2. Wait for initialization
-await new Promise(resolve => setTimeout(resolve, 2000));
-
-// 3. Read output
-const output = await getSessionOutput({ 
-  sessionId,
-  fromIndex: 0 
-});
-
-console.log(`Process is ${output.isRunning ? 'running' : 'stopped'}`);
-console.log('Output:', output.output.map(o => o.data).join(''));
-
-// 4. Send input (if needed)
-await writeInput({ 
-  sessionId, 
-  data: "rs\n" 
-});
-
-// 5. Read new output
-const newOutput = await getSessionOutput({ 
-  sessionId,
-  fromIndex: output.totalLines 
-});
-
-// 6. Stop process
-await stopProcess({ sessionId });
-```
-
----
-
-### Multiple Parallel Processes
-
-```javascript
-// Start 3 processes at once
-const sessions = {
-  frontend: await startProcess({
-    cmd: "npm", args: ["run", "dev"],
-    cwd: "/project/frontend"
-  }),
-  backend: await startProcess({
-    cmd: "node", args: ["server.js"],
-    cwd: "/project/backend"
-  }),
-  tests: await startProcess({
-    cmd: "npm", args: ["run", "test:watch"],
-    cwd: "/project/tests"
-  })
-};
-
-// Monitor each process separately
-for (const [name, session] of Object.entries(sessions)) {
-  const output = await getSessionOutput({
-    sessionId: session.sessionId,
-    fromIndex: 0
-  });
-  console.log(`${name}: ${output.isRunning ? 'running ✅' : 'stopped ❌'}`);
-}
-
-// Send input to specific process
-await writeInput({ 
-  sessionId: sessions.tests.sessionId,
-  data: "a\n"  // run all tests
-});
-
-// Stop specific process
-await stopProcess({ 
-  sessionId: sessions.frontend.sessionId 
-});
-
-// Stop all
-for (const session of Object.values(sessions)) {
-  await stopProcess({ sessionId: session.sessionId });
-}
-```
-
----
-
-## When to Use shell-bg?
-
-| Situation | Use shell-bg? |
-|-----------|--------------|
-| Dev server (npm run dev, vite, webpack) | ✅ Yes |
-| Watch modes (nodemon, jest --watch) | ✅ Yes |
-| Long-running processes (docker-compose up) | ✅ Yes |
-| Interactive CLI (npm init, git commit) | ✅ Yes |
-| Short commands (ls, cat, grep) | ❌ No (use mcp8_shell_execute) |
-| One-off commands with quick output | ❌ No (use mcp8_shell_execute) |
-
----
-
-## Comparison with Other Shell Tools
-
-| Tool | Long-running processes | Output in response | Interaction | Usage |
-|------|----------------------|-------------------|------------|-------|
-| **mcp6 (shell-bg)** | ✅ Yes | ✅ Buffer + terminal | ✅ writeInput | Dev servers, watch modes |
-| **mcp8 (shell-tumf)** | ❌ Hangs | ✅ Yes | ❌ No | ls, cat, grep, git status |
-| **mcp7 (shell-hdresearch)** | ❌ Hangs | ✅ Yes | ❌ No | Basic commands |
+| Creator | Long-running processes | Output in response | Interaction | Best for |
+|---------|----------------------|-------------------|------------|----------|
+| **bg** | ✅ Yes | ✅ Buffer + terminal | ✅ writeInput | Dev servers, watch modes |
+| **tumf** | ❌ Hangs | ✅ Yes | ✅ Yes | ls, cat, grep, git status |
+| **hdresearch** | ❌ Hangs | ✅ Yes | ✅ Yes | Basic commands |
 | **run_command** | ⚠️ Blocking/Async | ⚠️ Partial | ❌ No | Standard commands with user approval |
 
 ---
 
-## Usage Examples
+## 🚀 Quick Start
 
-### Dev Server Debugging
+### Installation
 
-```javascript
-// Start Vite
-const { sessionId } = await startProcess({
-  cmd: "npm",
-  args: ["run", "dev"],
-  cwd: "/project"
-});
-
-// Wait 2s
-await new Promise(r => setTimeout(r, 2000));
-
-// Read output and look for errors
-const output = await getSessionOutput({ sessionId });
-const hasError = output.output.some(o => 
-  o.data.includes('error') || o.data.includes('Error')
-);
-
-if (hasError) {
-  console.log('❌ Dev server has error!');
-  // Print error log
-  output.output
-    .filter(o => o.type === 'stderr')
-    .forEach(o => console.error(o.data));
-}
-
-// Restart server
-await writeInput({ sessionId, data: "rs\n" });
-
-// Stop
-await stopProcess({ sessionId });
+```bash
+npm install -g bg-server-mcp-shell
 ```
 
----
+### Configuration
 
-### Docker Compose Management
+Add to your MCP client config (e.g., Claude Desktop, Cline):
 
-```javascript
-// Start docker-compose
-const { sessionId } = await startProcess({
-  cmd: "docker-compose",
-  args: ["up"],
-  cwd: "/project/docker"
-});
-
-// Monitor logs
-const checkLogs = async () => {
-  const output = await getSessionOutput({ 
-    sessionId,
-    fromIndex: 0 
-  });
-  
-  const isReady = output.output.some(o => 
-    o.data.includes('database system is ready')
-  );
-  
-  return isReady;
-};
-
-// Wait until DB is ready
-while (!(await checkLogs())) {
-  await new Promise(r => setTimeout(r, 1000));
-}
-
-console.log('✅ Docker Compose is ready!');
-
-// Stop (Ctrl+C)
-await writeInput({ sessionId, data: "\x03" });
-```
-
----
-
-## Tips & Tricks
-
-### 1. **Incremental Output Reading**
-```javascript
-let lastIndex = 0;
-
-setInterval(async () => {
-  const output = await getSessionOutput({ 
-    sessionId,
-    fromIndex: lastIndex 
-  });
-  
-  // Only new lines
-  output.output.forEach(o => console.log(o.data));
-  
-  lastIndex = output.totalLines;
-}, 1000);
-```
-
-### 2. **Graceful Shutdown**
-```javascript
-// Try to exit "nicely"
-await writeInput({ sessionId, data: "q\n" });
-await new Promise(r => setTimeout(r, 1000));
-
-// Force kill if still running
-const status = await getSessionOutput({ sessionId });
-if (status.isRunning) {
-  await stopProcess({ sessionId });
-}
-```
-
-### 3. **Startup Timeout**
-```javascript
-const waitForReady = async (sessionId, timeout = 10000) => {
-  const start = Date.now();
-  
-  while (Date.now() - start < timeout) {
-    const output = await getSessionOutput({ sessionId });
-    const ready = output.output.some(o => o.data.includes('ready'));
-    
-    if (ready) return true;
-    if (!output.isRunning) throw new Error('Process died');
-    
-    await new Promise(r => setTimeout(r, 500));
+```json
+{
+  "mcpServers": {
+    "shell": {
+      "command": "npx",
+      "args": ["-y", "bg-server-mcp-shell@latest"],
+      "env": {
+        "COLOR": "false"
+      }
+    }
   }
-  
-  throw new Error('Timeout waiting for ready');
-};
-
-const { sessionId } = await startProcess({...});
-await waitForReady(sessionId);
-console.log('✅ Process is ready!');
+}
 ```
 
 ---
 
-## Troubleshooting
+## 🛠️ Available Tools
 
-### Process exits immediately
-```javascript
-const output = await getSessionOutput({ sessionId });
-console.log('Exit code:', output.exitCode);
-console.log('Output:', output.output.map(o => o.data).join(''));
-// → check error in output
+### CLI Usage (Advanced)
+
+For testing or scripting, call tools directly via command line.
+
+**Start the server:**
+```bash
+npx bg-server-mcp-shell
 ```
 
-### Output is empty
-```javascript
-// Wait a bit, output may take time
-await new Promise(r => setTimeout(r, 2000));
-const output = await getSessionOutput({ sessionId });
+**Then in another terminal, send MCP requests:**
+
+**Quick command (wait for completion):**
+`startProcessAndWait` Run command and wait for completion
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"startProcessAndWait","arguments":{"cmd":"echo","args":["Hello"],"timeoutMs":5000}}}' | npx bg-server-mcp-shell
 ```
 
-### Session not found
-```javascript
-// Session was cleaned up - check listSessions
-const sessions = await listSessions();
-console.log('Active sessions:', sessions);
+**Start a background process:**
+`startProcessBackground` Start long-running process in background
+```bash
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"startProcessBackground","arguments":{"cmd":"npm","args":["run","dev"]}}}' | npx bg-server-mcp-shell
+```
+
+**List sessions:**
+`listSessions` List all active sessions
+```bash
+echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"listSessions","arguments":{}}}' | npx bg-server-mcp-shell
+```
+
+**Get output:**
+`getSessionOutput` Read buffered output from session
+```bash
+echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"getSessionOutput","arguments":{"sessionId":"<id>"}}}' | npx bg-server-mcp-shell
+```
+
+**Send input:**
+`writeInput` Send input to running process
+```bash
+echo '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"writeInput","arguments":{"sessionId":"<id>","data":"rs\n"}}}' | npx bg-server-mcp-shell
+```
+
+**Stop process:**
+`stopProcess` Stop a running session
+```bash
+echo '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"stopProcess","arguments":{"sessionId":"<id>"}}}' | npx bg-server-mcp-shell
+```
+
+**Cleanup finished sessions:**
+`cleanupSessions` Remove finished sessions from memory
+```bash
+# Cleanup specific session
+echo '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"cleanupSessions","arguments":{"sessionId":"<id>"}}}' | npx bg-server-mcp-shell
+
+# Or cleanup all finished sessions
+echo '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"cleanupSessions","arguments":{}}}' | npx bg-server-mcp-shell
 ```
 
 ---
 
-## Best Practices
+## 🧪 Development & Testing
 
-1. ✅ **Always save sessionId** - you need it for all operations
-2. ✅ **Check isRunning** - verify process is running before writeInput
-3. ✅ **Use fromIndex** - more efficient reading of only new lines
-4. ✅ **Cleanup sessions** - call stopProcess when you no longer need the process
-5. ✅ **Timeout protection** - don't wait indefinitely for output
-6. ✅ **Error handling** - check exitCode and stderr output
+For developers contributing to this project:
+
+```bash
+# All tests
+npm test
+
+# Unit tests only (fast)
+npm run test:unit
+
+# Integration tests
+npm run test:integration
+
+# Watch mode
+npm run test:watch
+
+# Verbose output
+npm run test:verbose
+```
+
+**Full documentation:** See [Tests Documentation](tests/README.md) for complete testing guide, coverage, and API reference.
 
 ---
 
-## Conclusion
+## 📦 Technical Details
 
-**shell-bg is ideal for:**
-- 🚀 Dev servers (Vite, webpack, Next.js)
-- 🔄 Watch modes (nodemon, jest --watch)
-- 🐳 Docker / Docker Compose
-- 🧪 Long-running tests
-- 💬 Interactive CLI tools
+- **Framework:** MCP (Model Context Protocol)
+- **Test Runner:** Node.js native test runner (node:test)
+- **PTY:** node-pty for terminal emulation
+- **Node:** 18+ required
+- **Platform:** macOS, Linux, Windows
 
-**Main advantage:** Real-time stream + interaction + multiple sessions = full control! 💪
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new features
+4. Ensure all tests pass: `npm test`
+5. Submit a pull request
+
+---
+
+## 📄 License
+
+MIT © [Bruno Garret](https://bgbruno.com)
+
+---
+
+## 🔗 Links
+
+- [MCP Protocol Spec](https://modelcontextprotocol.io)
+- [node-pty Documentation](https://github.com/microsoft/node-pty)
+- [Node.js Test Runner](https://nodejs.org/api/test.html)

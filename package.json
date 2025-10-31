@@ -2,7 +2,7 @@
   "name": "bg-server-mcp-shell",
   "version": "1.0.2",
   "type": "module",
-  "description": "MCP server pre shell - PTY and live streaming for long-running processes (dev servers, watch modes, docker-compose, etc.)",
+  "description": "MCP server for shell - PTY with live streaming for long-running processes (dev servers, watch modes, docker-compose, etc.)",
   "author": "bgbruno",
   "license": "MIT",
   "keywords": [
@@ -29,13 +29,19 @@
     "bg-server-mcp-shell": "./bg-server-mcp-shell.js"
   },
   "scripts": {
-    "start": "node ./bg-server-mcp-shell.js"
+    "start": "node ./bg-server-mcp-shell.js",
+    "test": "node --test tests/**/*.test.js",
+    "test:unit": "node --test tests/unit/**/*.test.js",
+    "test:integration": "node --test tests/integration/**/*.test.js",
+    "test:watch": "node --test --watch tests/**/*.test.js",
+    "test:verbose": "node --test --test-reporter=spec tests/**/*.test.js",
+    "test:run": "bash tests/tests-run.sh"
   },
   "files": [
     "bg-server-mcp-shell.js",
     "README.md",
-    "README.sk.md",
-    "LICENSE"
+    "LICENSE",
+    "tests/README.md"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",
