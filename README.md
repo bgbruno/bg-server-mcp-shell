@@ -1,60 +1,14 @@
-# 🐚 bg-mcp-shell-server
+Documentations : [Main](README.md) | [Tests](tests/README.md)
+
+
 
 ![Cover Image](cover-wide.jpg)
 
+# bg-mcp-shell-server
+
 > MCP server for running long-running processes in PTY with real-time output streaming
 
----
 
-## 💡 Use cases
-
-**You:** "Run playwright tests and monitor for errors"
-
-**AI:**
-```
-Running tests...
-
-[chromium] › login.spec.ts:12:5 › user login
-  ✓ should show login form (543ms)
-  ✓ should validate email (234ms)
-  
-[chromium] › checkout.spec.ts:25:3 › payment flow
-  ✗ should process payment (1823ms)
-    Error: Timeout waiting for selector "button[data-testid=pay]"
-
-❌ Found error in tests! 1 test failed.
-```
-
-**You:** "Build and deploy to Cloudflare"
-
-**AI:**
-```
-Building project...
-✓ 1245 modules transformed.
-✓ built in 2.34s
-
-Deploying to Cloudflare Pages...
-✓ Uploading 143 files
-✓ Deployment complete!
-
-🚀 https://my-app-a1b2c3.pages.dev
-✅ Successfully deployed to production
-```
-
-**You:** "Start docker-compose and tell me when postgres is ready"
-
-**AI:**
-```
-Starting docker-compose...
-
-postgres_1  | database system is ready to accept connections
-redis_1     | Ready to accept connections  
-web_1       | Server listening on port 3000
-
-✅ Postgres is ready! All containers running.
-```
-
----
 
 ## ✨ Features
 
@@ -64,9 +18,9 @@ web_1       | Server listening on port 3000
 - ✅ **Buffered output** - Full output history preserved
 - ✅ **PTY emulation** - True terminal experience
 
----
 
-## 💡 Perfect For
+
+## 👥 Perfect for
 
 - 🚀 **Dev servers** (Vite, webpack, Next.js)
 - 🔄 **Watch modes** (nodemon, jest --watch)
@@ -74,18 +28,35 @@ web_1       | Server listening on port 3000
 - 🧪 **Long-running tests**
 - 💬 **Interactive CLI tools**
 
----
+
+
+## 🤖 Use cases prompts
+
+**[ You ]** " Run web dev server , check for errors , and fix . "
+
+**[ You ]** " Run playwright tests and monitor for errors . "
+
+**[ You ]** " Build and deploy to Cloudflare . "
+
+**[ You ]** " Start docker-compose and tell me when postgres is ready . "
+
+**[ You ]** " Tell me what processes are running . "
+
+**[ You ]** " Restart processes . "
+
+
+
 
 ## 📊 Comparison
 
 | Creator | Long-running processes | Output in response | Interaction | Best for |
-|---------|----------------------|-------------------|------------|----------|
+|-|-|-|-|-|
 | **bg** | ✅ Yes | ✅ Buffer + terminal | ✅ writeInput | Dev servers, watch modes |
 | **tumf** | ❌ Hangs | ✅ Yes | ✅ Yes | ls, cat, grep, git status |
 | **hdresearch** | ❌ Hangs | ✅ Yes | ✅ Yes | Basic commands |
 | **run_command** | ⚠️ Blocking/Async | ⚠️ Partial | ❌ No | Standard commands with user approval |
 
----
+
 
 ## 🚀 Quick Start
 
@@ -113,7 +84,7 @@ Add to your MCP client config (e.g., Claude Desktop, Cline):
 }
 ```
 
----
+
 
 ## 🛠️ Functions
 
@@ -163,10 +134,9 @@ echo '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"cleanupSes
 echo '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"cleanupSessions","arguments":{}}}' | npx bg-server-mcp-shell
 ```
 
----
+
 
 ## 🧪 Development
-
 
 **Full documentation:** See [Tests Documentation](tests/README.md) for complete testing guide, coverage, and API reference.
 
@@ -194,7 +164,7 @@ Found a bug or have a feature request? Please report it on GitHub:
 
 **[Report an Issue](https://github.com/bgbruno/bg-server-mcp-shell/issues)**
 
----
+
 
 ## 📄 License
 
